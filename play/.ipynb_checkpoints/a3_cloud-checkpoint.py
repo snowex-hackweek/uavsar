@@ -49,7 +49,7 @@ def downloading(file):
         cmd = "wget -1 {0} --user={1} --password={2} -P {3} --progress=bar:force".format(file, ASF_USER, ASF_PASS, data_dir)
         #os.system(cmd) 
         #subprocess.call(cmd)
-        process = Popen(['wget',file,'--user={}'.format(ASF_USER),'--password={}'.format(ASF_PASS),'-P',data_dir,'--progress=bar'], stderr=subprocess.PIPE)
+        process = Popen(['wget',file,'--user={}'.format(ASF_USER),'--password={}'.format(ASF_PASS),'-P',data_dir,'--progress=bar'],stderr=subprocess.PIPE)
         started = False
         for line in process.stderr:
             line = line.decode("utf-8", "replace")
@@ -224,13 +224,15 @@ wavelength units = Unknown
     data_to_process = glob.glob(os.path.join(folder, '*.grd')) # list all .grd files
     for data_path in data_to_process: # loop to open and translate .grd to .tiff, and save .tiffs using gdal
         raster_dataset = gdal.Open(data_path, gdal.GA_ReadOnly)
-        raster = gdal.Translate(os.path.join(folder, os.path.basename(data_path) + '.tiff'), raster_dataset, format = 'Gtiff', outputType = gdal.GDT_Float32)
+        raster = gdal.Translate(os.path.join(folder, os.path.basename(data_path) + '.tiff'), raster_dataset, 
+                                format = 'Gtiff', outputType = gdal.GDT_Float32)
     
     # Step 5: Save the .int raster, needs separate save because of the complex format
     data_to_process = glob.glob(os.path.join(folder, '*.int.grd')) # list all .int.grd files (only 1)
     for data_path in data_to_process:
         raster_dataset = gdal.Open(data_path, gdal.GA_ReadOnly)
-        raster = gdal.Translate(os.path.join(folder, os.path.basename(data_path) + '.tiff'), raster_dataset, format = 'Gtiff', outputType = gdal.GDT_CFloat32)
+        raster = gdal.Translate(os.path.join(folder, os.path.basename(data_path) + '.tiff'), raster_dataset, 
+                                format = 'Gtiff', outputType = gdal.GDT_CFloat32)
 
     print(".tiffs have been created")
     return
