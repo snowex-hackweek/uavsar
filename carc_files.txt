@@ -1,2 +1,2 @@
-https://datapool.asf.alaska.edu/AMPLITUDE_GRD/UA/uticam_21003_21002-003_21004-002_0005d_s01_L090_01_amp_grd.zip
-https://datapool.asf.alaska.edu/AMPLITUDE_GRD/UA/uticam_21003_21004-002_21013-003_0034d_s01_L090_01_amp_grd.zip
+https://datapool.asf.alaska.edu/INTERFEROMETRY_GRD/UA/uticam_21003_21004-002_21013-003_0034d_s01_L090_01_int_grd.zip
+https://datapool.asf.alaska.edu/INTERFEROMETRY_GRD/UA/uticam_21003_21002-003_21004-002_0005d_s01_L090_01_int_grd.zip
