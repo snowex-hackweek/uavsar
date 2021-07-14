@@ -13,7 +13,7 @@ import io
 import shutil
 from subprocess import PIPE, Popen
 import subprocess
-import fcntl
+import fcntl ##may need to pip install this one
 import select
 import sys
 
@@ -49,7 +49,7 @@ def downloading(file):
         cmd = "wget -1 {0} --user={1} --password={2} -P {3} --progress=bar:force".format(file, ASF_USER, ASF_PASS, data_dir)
         #os.system(cmd) 
         #subprocess.call(cmd)
-        process = Popen(['wget',file,'--user={}'.format(ASF_USER),'--password={}'.format(ASF_PASS),'-P',data_dir,'--progress=bar'],stderr=subprocess.PIPE)
+        process = Popen(['wget',file,'--user={}'.format(ASF_USER),'--password={}'.format(ASF_PASS),'-P',data_dir,'--progress=bar'], stderr=subprocess.PIPE)
         started = False
         for line in process.stderr:
             line = line.decode("utf-8", "replace")
@@ -73,7 +73,6 @@ def downloading(file):
 
     for file in glob.glob("/tmp/*.zip"):
         with zipfile.ZipFile(file, "r") as zip_ref:
-            zip_ref.printdir()
             print('Extracting all the files now...')
             zip_ref.extractall('/tmp')
             print("done")
@@ -82,7 +81,7 @@ def downloading(file):
 
 # folder is path to a folder with an .ann (or .txt) and .grd files (.amp1, .amp2, .cor, .unw, .int)
 
-def uavsar_tiff_convert(folder):
+def uavsar_tiff_convert(folder, verbose = False):
     """
     Builds a header file for the input UAVSAR .grd file,
     allowing the data to be read as a raster dataset.
@@ -143,25 +142,29 @@ wavelength units = Unknown
             for line in searchfile:
                 if "Ground Range Data Latitude Lines" in line:
                     Lines = line[65:70]
-                    print(f"Number of Lines: {Lines}")
+                    if verbose:
+                        print(f"Number of Lines: {Lines}")
                     if Lines not in Lines_list:
                         Lines_list.append(Lines)
 
                 elif "Ground Range Data Longitude Samples" in line:
                     Samples = line[65:70]
-                    print(f"Number of Samples: {Samples}")
+                    if verbose:
+                        print(f"Number of Samples: {Samples}")
                     if Samples not in Samples_list:
                         Samples_list.append(Samples)
 
                 elif "Ground Range Data Starting Latitude" in line:
                     Latitude = line[65:85]
-                    print(f"Top left lat: {Latitude}")
+                    if verbose:
+                        print(f"Top left lat: {Latitude}")
                     if Latitude not in Latitude_list:
                         Latitude_list.append(Latitude)
 
                 elif "Ground Range Data Starting Longitude" in line:
                     Longitude = line[65:85]
-                    print(f"Top left Lon: {Longitude}")
+                    if verbose:
+                        print(f"Top left Lon: {Longitude}")
                     if Longitude not in Longitude_list:
                         Longitude_list.append(Longitude)
     
@@ -224,15 +227,13 @@ wavelength units = Unknown
     data_to_process = glob.glob(os.path.join(folder, '*.grd')) # list all .grd files
     for data_path in data_to_process: # loop to open and translate .grd to .tiff, and save .tiffs using gdal
         raster_dataset = gdal.Open(data_path, gdal.GA_ReadOnly)
-        raster = gdal.Translate(os.path.join(folder, os.path.basename(data_path) + '.tiff'), raster_dataset, 
-                                format = 'Gtiff', outputType = gdal.GDT_Float32)
+        raster = gdal.Translate(os.path.join(folder, os.path.basename(data_path) + '.tiff'), raster_dataset, format = 'Gtiff', outputType = gdal.GDT_Float32)
     
     # Step 5: Save the .int raster, needs separate save because of the complex format
     data_to_process = glob.glob(os.path.join(folder, '*.int.grd')) # list all .int.grd files (only 1)
     for data_path in data_to_process:
         raster_dataset = gdal.Open(data_path, gdal.GA_ReadOnly)
-        raster = gdal.Translate(os.path.join(folder, os.path.basename(data_path) + '.tiff'), raster_dataset, 
-                                format = 'Gtiff', outputType = gdal.GDT_CFloat32)
+        raster = gdal.Translate(os.path.join(folder, os.path.basename(data_path) + '.tiff'), raster_dataset, format = 'Gtiff', outputType = gdal.GDT_CFloat32)
 
     print(".tiffs have been created")
     return
@@ -280,12 +281,15 @@ def clear_folder(folder):
     return
 
 def main(zip_url, clear_temp = True):
+    zip_num = len(zip_url)
+    count = 0
     for url in zip_url:
+        print('Starting {} of {} zips'.format(count, zip_num))
         data_dir = downloading(url)
         uavsar_tiff_convert(data_dir)
         folder_name, number_uploaded = a3_bucket_transfer(data_dir)
         if clear_temp:
             clear_folder(data_dir)
-        print('Created folder {} with {} images'.format(folder_name, number_uploaded))
+        print('Created folder {} with {} images'.format(folder_name, number_uploaded.strip()))
 
         
